@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWS AI Practitioner — services & lifecycle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f2ea;
+      --bg-card: #fffbf3;
+      --bg-card-back: #f1ebe0;
+      --ink: #2a2520;
+      --ink-soft: #6b5f52;
+      --ink-faint: #a89c8e;
+      --line: #e4dccd;
+      --sage: #c8d4be;
+      --blush: #ecc8c0;
+      --butter: #f0d99c;
+      --lilac: #d4cce0;
+      --sky: #bfd3dc;
+      --accent: #2a2520;
+      --shadow: 0 1px 0 rgba(42,37,32,0.04), 0 2px 8px rgba(42,37,32,0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 400;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 2rem 1.25rem 6rem;
+      font-feature-settings: 'ss01', 'ss02';
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    /* ── header ────────────────────────── */
+    .header { text-align: center; margin: 2rem 0 3rem; }
+    .header .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .header .eyebrow span { color: var(--ink); }
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 400;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+    h1 .italic { font-style: italic; font-weight: 300; color: var(--ink-soft); }
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--ink-soft);
+      font-style: italic;
+      max-width: 38rem;
+      margin: 0 auto;
+    }
+    .subtitle .heart { color: #c97a6e; font-style: normal; }
+
+    .meta-row {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+    }
+    .meta-row span strong { color: var(--ink); font-weight: 500; }
+
+    /* ── controls ──────────────────────── */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 2rem 0 1rem;
+    }
+    .pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: lowercase;
+      padding: 0.45rem 0.95rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--bg-card);
+      color: var(--ink-soft);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .pill:hover { border-color: var(--ink); color: var(--ink); }
+    .pill.active {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+    }
+    .action-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: lowercase;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border-radius: 2px;
+    }
+    .action-btn:hover { background: var(--ink); color: var(--bg); }
+    .action-btn .arr { font-style: italic; font-family: 'Fraunces', serif; }
+
+    /* ── section markers ───────────────── */
+    .section-marker {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin: 3.5rem 0 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-marker.hidden { display: none; }
+    .section-marker .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.1em;
+    }
+    .section-marker h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 400;
+      font-size: 1.8rem;
+      letter-spacing: -0.01em;
+    }
+    .section-marker .count {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.1em;
+      text-transform: lowercase;
+    }
+
+    /* ── cards grid ────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      perspective: 1400px;
+      cursor: pointer;
+      height: 360px;
+    }
+    .card.hidden { display: none; }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.65s cubic-bezier(0.4, 0.0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 6px;
+      padding: 1.25rem 1.25rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .card-front {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .card-back {
+      background: var(--bg-card-back);
+      border: 1px solid var(--line);
+      transform: rotateY(180deg);
+      overflow-y: auto;
+    }
+
+    .card-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--ink-faint);
+      text-transform: lowercase;
+      margin-bottom: 0.5rem;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.85rem; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.06em;
+      padding: 0.18rem 0.5rem;
+      border-radius: 2px;
+      color: var(--ink);
+    }
+    .tag.sage { background: var(--sage); }
+    .tag.blush { background: var(--blush); }
+    .tag.butter { background: var(--butter); }
+    .tag.lilac { background: var(--lilac); }
+    .tag.sky { background: var(--sky); }
+    .tag.ink { background: var(--ink); color: var(--bg); }
+
+    .preview {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.5rem 0;
+    }
+    .preview svg { max-width: 100%; max-height: 130px; }
+
+    .card-front h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 1.4rem;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.4rem;
+    }
+    .card-front .flip-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.1em;
+      margin-top: auto;
+    }
+
+    /* ── card back content ─────────────── */
+    .card-back h4 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 1.1rem;
+      margin-bottom: 0.7rem;
+      letter-spacing: -0.01em;
+    }
+    .card-back p { font-size: 0.88rem; margin-bottom: 0.55rem; line-height: 1.45; }
+    .card-back ul { padding-left: 1.1rem; margin: 0.4rem 0 0.6rem; font-size: 0.85rem; }
+    .card-back li { margin-bottom: 0.25rem; line-height: 1.45; }
+    .card-back .aside {
+      font-style: italic;
+      color: var(--ink-soft);
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed var(--line);
+    }
+    .card-back .aside strong { color: var(--ink); font-style: normal; }
+    .card-back strong { font-weight: 500; }
+    .card-back code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      background: rgba(42,37,32,0.06);
+      padding: 0.05rem 0.3rem;
+      border-radius: 2px;
+    }
+    .card-back table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      margin: 0.5rem 0;
+    }
+    .card-back th, .card-back td {
+      text-align: left;
+      padding: 0.3rem 0.4rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .card-back th { font-weight: 500; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: lowercase; color: var(--ink-soft); }
+    .card-back .trap {
+      background: rgba(201,122,110,0.1);
+      border-left: 2px solid #c97a6e;
+      padding: 0.5rem 0.7rem;
+      margin: 0.5rem 0;
+      font-size: 0.82rem;
+      border-radius: 0 2px 2px 0;
+    }
+    .card-back .trap strong { color: #a45a4e; }
+
+    /* scrollbar */
+    .card-back::-webkit-scrollbar { width: 4px; }
+    .card-back::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 2px; }
+    .card-back::-webkit-scrollbar-track { background: transparent; }
+
+    /* ── footer ────────────────────────── */
+    .footer {
+      text-align: center;
+      margin-top: 5rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--line);
+      color: var(--ink-faint);
+      font-size: 0.8rem;
+      font-style: italic;
+    }
+    .footer .heart { color: #c97a6e; font-style: normal; }
+
+    /* ── responsive ────────────────────── */
+    @media (max-width: 600px) {
+      body { padding: 1rem 0.75rem 4rem; }
+      .grid { grid-template-columns: 1fr; }
+      .card { height: 340px; }
+      .meta-row { gap: 1rem; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="eyebrow">✦ revision deck <span>·</span> companion volume ✦</div>
+    <h1>aws AI Practitioner <span class="italic">services &amp; lifecycle</span></h1>
+    <p class="subtitle">tap a card to flip it <span class="heart">♡</span> the AWS service zoo, lifecycle terms and FM trap questions, in revision form</p>
+    <div class="meta-row">
+      <span><strong id="total">20</strong> cards</span>
+      <span><strong>6</strong> topics</span>
+      <span>cards flipped <strong id="flipped-count">0</strong> / <strong id="flipped-total">20</strong></span>
+    </div>
+  </header>
+
+  <div class="filters" id="filters">
+    <button class="pill active" data-filter="all">all</button>
+    <button class="pill" data-filter="infra">infrastructure</button>
+    <button class="pill" data-filter="sagemaker">sagemaker family</button>
+    <button class="pill" data-filter="responsible">responsible AI</button>
+    <button class="pill" data-filter="lifecycle">lifecycle terms</button>
+    <button class="pill" data-filter="fm">foundation models</button>
+    <button class="pill" data-filter="fit">fit &amp; challenges</button>
+  </div>
+
+  <div class="actions">
+    <button class="action-btn" id="flip-all">flip all</button>
+    <button class="action-btn" id="reset">reset deck</button>
+    <button class="action-btn" id="shuffle">shuffle <span class="arr">✦</span></button>
+  </div>
+
+  <main id="deck">
+
+    <!-- ───────── § 01 infrastructure ───────── -->
+    <div class="section-marker" data-section="infra">
+      <span class="num">§ 01</span>
+      <h2>infrastructure</h2>
+      <span class="count">3 cards</span>
+    </div>
+    <div class="grid">
+
+      <!-- card 01 -->
+      <div class="card" data-section="infra">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">01infrastructure</div>
+            <div class="tags"><span class="tag sage">Region</span><span class="tag butter">AZ</span><span class="tag lilac">≥ 3</span></div>
+            <h3>AWS Regions</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="20" width="80" height="60" fill="none" stroke="#2a2520" stroke-width="1" rx="2"/>
+                <text x="50" y="15" font-family="JetBrains Mono" font-size="8" text-anchor="middle" fill="#6b5f52">eu-west-2</text>
+                <circle cx="30" cy="50" r="8" fill="#c8d4be"/>
+                <circle cx="50" cy="50" r="8" fill="#c8d4be"/>
+                <circle cx="70" cy="50" r="8" fill="#c8d4be"/>
+                <rect x="120" y="20" width="80" height="60" fill="none" stroke="#2a2520" stroke-width="1" rx="2"/>
+                <text x="160" y="15" font-family="JetBrains Mono" font-size="8" text-anchor="middle" fill="#6b5f52">us-east-1</text>
+                <circle cx="140" cy="40" r="8" fill="#ecc8c0"/>
+                <circle cx="160" cy="40" r="8" fill="#ecc8c0"/>
+                <circle cx="180" cy="40" r="8" fill="#ecc8c0"/>
+                <circle cx="150" cy="65" r="8" fill="#ecc8c0"/>
+                <circle cx="170" cy="65" r="8" fill="#ecc8c0"/>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">01infrastructure</div>
+            <h4>AWS Region</h4>
+            <p>A <strong>physical location</strong> in the world where AWS clusters its data centres.</p>
+            <ul>
+              <li>Each Region has <strong>≥ 3 Availability Zones</strong> (the magic number — not 2)</li>
+              <li>AZs are isolated, physically separate, geographically grouped</li>
+              <li>Connected by redundant, ultra-low-latency networks</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam trap:</strong> "Region has minimum 2 AZs" is the wrong-but-tempting option. It's always <strong>3</strong>.
+            </div>
+            <p class="aside">Pick a Region for: <strong>compliance</strong> (data residency), <strong>latency</strong> (close to users), <strong>service availability</strong>, <strong>price</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 02 -->
+      <div class="card" data-section="infra">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">02infrastructure</div>
+            <div class="tags"><span class="tag butter">AZ</span><span class="tag sage">≥ 1 DC</span></div>
+            <h3>Availability Zones</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="30" y="20" width="50" height="60" fill="none" stroke="#6b5f52" stroke-width="1" stroke-dasharray="3,3" rx="2"/>
+                <text x="55" y="14" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">AZ-a</text>
+                <rect x="38" y="35" width="14" height="10" fill="#ecc8c0"/>
+                <rect x="56" y="35" width="14" height="10" fill="#ecc8c0"/>
+                <rect x="38" y="50" width="14" height="10" fill="#ecc8c0"/>
+                <rect x="56" y="50" width="14" height="10" fill="#ecc8c0"/>
+                <text x="55" y="92" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#6b5f52">multiple DCs</text>
+                <text x="105" y="55" font-family="JetBrains Mono" font-size="12" fill="#a89c8e">↔</text>
+                <rect x="130" y="20" width="50" height="60" fill="none" stroke="#6b5f52" stroke-width="1" stroke-dasharray="3,3" rx="2"/>
+                <text x="155" y="14" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">AZ-b</text>
+                <rect x="148" y="45" width="14" height="10" fill="#c8d4be"/>
+                <text x="155" y="92" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#6b5f52">1 DC</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">02infrastructure</div>
+            <h4>Availability Zone (AZ)</h4>
+            <p><strong>One or more discrete data centres</strong> with redundant power, networking and connectivity, inside a Region.</p>
+            <ul>
+              <li>Each AZ has independent power, cooling and physical security</li>
+              <li>AZs in a Region are interconnected via high-bandwidth, low-latency, redundant metro fibre</li>
+              <li>Naming: <code>eu-west-2a</code>, <code>eu-west-2b</code>, etc.</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam trap:</strong> "AZ consists of two or more discrete data centres" is wrong. It's <strong>one or more</strong>.
+            </div>
+            <p class="aside">Spread workloads across <strong>≥ 2 AZs</strong> in the same Region for high availability — single AZ = single point of failure.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 03 -->
+      <div class="card" data-section="infra">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">03infrastructure</div>
+            <div class="tags"><span class="tag lilac">Edge</span><span class="tag sky">CloudFront</span></div>
+            <h3>Edge Locations</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="110" cy="50" r="22" fill="#2a2520"/>
+                <text x="110" y="54" font-family="JetBrains Mono" font-size="8" text-anchor="middle" fill="#f7f2ea">Region</text>
+                <circle cx="40" cy="30" r="6" fill="#d4cce0"/>
+                <circle cx="180" cy="30" r="6" fill="#d4cce0"/>
+                <circle cx="35" cy="70" r="6" fill="#d4cce0"/>
+                <circle cx="185" cy="75" r="6" fill="#d4cce0"/>
+                <circle cx="110" cy="15" r="6" fill="#d4cce0"/>
+                <circle cx="110" cy="88" r="6" fill="#d4cce0"/>
+                <line x1="46" y1="32" x2="92" y2="44" stroke="#a89c8e" stroke-width="0.5" stroke-dasharray="2,2"/>
+                <line x1="174" y1="32" x2="128" y2="44" stroke="#a89c8e" stroke-width="0.5" stroke-dasharray="2,2"/>
+                <line x1="41" y1="68" x2="90" y2="58" stroke="#a89c8e" stroke-width="0.5" stroke-dasharray="2,2"/>
+                <line x1="179" y1="73" x2="130" y2="58" stroke="#a89c8e" stroke-width="0.5" stroke-dasharray="2,2"/>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">03infrastructure</div>
+            <h4>Edge Locations</h4>
+            <p>Separate from Regions and AZs — these are <strong>content delivery endpoints</strong> close to end users.</p>
+            <ul>
+              <li>Used by services like <strong>CloudFront</strong> (CDN) and <strong>Route 53</strong></li>
+              <li>Cache content near users for faster delivery</li>
+              <li>Far more numerous than Regions (400+ globally)</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam trap:</strong> Edge Locations are NOT inside Regions, and Regions are NOT made of Edge Locations. They're a parallel concept.
+            </div>
+            <p class="aside">Hierarchy: <strong>Region</strong> contains <strong>AZs</strong> which contain <strong>data centres</strong>. Edge Locations sit outside this stack.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ───────── § 02 sagemaker family ───────── -->
+    <div class="section-marker" data-section="sagemaker">
+      <span class="num">§ 02</span>
+      <h2>sagemaker family</h2>
+      <span class="count">6 cards</span>
+    </div>
+    <div class="grid">
+
+      <!-- card 04: Canvas -->
+      <div class="card" data-section="sagemaker">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">04sagemaker</div>
+            <div class="tags"><span class="tag sage">no-code</span><span class="tag butter">business users</span></div>
+            <h3>SageMaker Canvas</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="30" y="20" width="160" height="60" fill="#fffbf3" stroke="#2a2520" stroke-width="1" rx="3"/>
+                <rect x="40" y="32" width="40" height="8" fill="#c8d4be"/>
+                <rect x="40" y="46" width="60" height="8" fill="#c8d4be"/>
+                <rect x="40" y="60" width="30" height="8" fill="#c8d4be"/>
+                <text x="160" y="42" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#6b5f52">drag</text>
+                <text x="160" y="56" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#6b5f52">drop</text>
+                <text x="160" y="70" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#6b5f52">predict</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">04sagemaker</div>
+            <h4>SageMaker Canvas</h4>
+            <p><strong>Generate ML predictions without writing any code.</strong> Visual, drag-and-drop interface for business analysts.</p>
+            <ul>
+              <li>Chat with popular LLMs</li>
+              <li>Use Ready-to-use models</li>
+              <li>Build custom models on your data — automatically</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam keyword:</strong> "no code" or "business user" or "without writing code" → <strong>Canvas</strong>. Every time.
+            </div>
+            <p class="aside">Think of it as the friendly front-end to ML for people who don't live in PyCharm.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 05: JumpStart -->
+      <div class="card" data-section="sagemaker">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">05sagemaker</div>
+            <div class="tags"><span class="tag blush">model hub</span><span class="tag lilac">one-click</span></div>
+            <h3>SageMaker JumpStart</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="25" width="50" height="50" fill="#ecc8c0" rx="3"/>
+                <rect x="85" y="25" width="50" height="50" fill="#c8d4be" rx="3"/>
+                <rect x="150" y="25" width="50" height="50" fill="#d4cce0" rx="3"/>
+                <text x="45" y="55" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">Llama</text>
+                <text x="110" y="55" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">Stable Dif.</text>
+                <text x="175" y="55" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">Claude</text>
+                <text x="110" y="92" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#6b5f52">deploy with 1 click</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">05sagemaker</div>
+            <h4>SageMaker JumpStart</h4>
+            <p>An ML <strong>hub of foundation models, built-in algorithms and prebuilt solutions</strong> you can deploy in a few clicks.</p>
+            <ul>
+              <li>Access to popular FMs (Llama, Stable Diffusion, etc.)</li>
+              <li>Pre-built end-to-end solutions for common use cases</li>
+              <li>Fine-tune models on your own data</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam keyword:</strong> "one-click", "end-to-end solutions", "prebuilt", "foundation model hub" → <strong>JumpStart</strong>.
+            </div>
+            <p class="aside">Canvas vs JumpStart: <strong>Canvas</strong> = no-code UI for predictions. <strong>JumpStart</strong> = model + solution hub for builders.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 06: Clarify -->
+      <div class="card" data-section="sagemaker">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">06sagemaker</div>
+            <div class="tags"><span class="tag ink">responsible AI</span><span class="tag butter">bias</span></div>
+            <h3>SageMaker Clarify</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="40" width="30" height="40" fill="#c8d4be"/>
+                <rect x="55" y="25" width="30" height="55" fill="#ecc8c0"/>
+                <rect x="90" y="50" width="30" height="30" fill="#c8d4be"/>
+                <rect x="125" y="20" width="30" height="60" fill="#ecc8c0"/>
+                <rect x="160" y="45" width="30" height="35" fill="#c8d4be"/>
+                <line x1="15" y1="80" x2="200" y2="80" stroke="#2a2520" stroke-width="0.8"/>
+                <text x="105" y="95" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">feature importance</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">06sagemaker</div>
+            <h4>SageMaker Clarify</h4>
+            <p>Two jobs, both critical for Responsible AI:</p>
+            <ul>
+              <li><strong>Detects bias</strong> in your data and in model predictions across groups</li>
+              <li><strong>Explains predictions</strong> — shows how each input feature contributed (SHAP values)</li>
+            </ul>
+            <table>
+              <tr><th>when</th><th>what it checks</th></tr>
+              <tr><td>pre-training</td><td>bias in your dataset</td></tr>
+              <tr><td>post-training</td><td>bias in model predictions</td></tr>
+              <tr><td>inference</td><td>explainability per prediction</td></tr>
+            </table>
+            <p class="aside"><strong>Exam keyword:</strong> "bias", "fairness", "explain predictions", "transparency" → <strong>Clarify</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 07: Model Monitor -->
+      <div class="card" data-section="sagemaker">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">07sagemaker</div>
+            <div class="tags"><span class="tag ink">responsible AI</span><span class="tag sky">drift</span></div>
+            <h3>Model Monitor</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="15,60 35,55 55,58 75,50 95,52 115,45 135,42 155,30 175,20 195,15" fill="none" stroke="#c97a6e" stroke-width="1.5"/>
+                <line x1="15" y1="40" x2="205" y2="40" stroke="#a89c8e" stroke-width="0.5" stroke-dasharray="3,2"/>
+                <text x="200" y="38" font-family="JetBrains Mono" font-size="6" text-anchor="end" fill="#6b5f52">threshold</text>
+                <circle cx="155" cy="30" r="3" fill="#c97a6e"/>
+                <text x="155" y="22" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#c97a6e">⚠ alert</text>
+                <text x="110" y="92" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">production drift</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">07sagemaker</div>
+            <h4>SageMaker Model Monitor</h4>
+            <p><strong>Continuously watches deployed models</strong> in production and alerts when something goes wrong.</p>
+            <ul>
+              <li>Detects <strong>data drift</strong> — when incoming data shifts from training data</li>
+              <li>Detects <strong>concept drift</strong> — when the underlying relationships change</li>
+              <li>Flags data quality issues and anomalies</li>
+              <li>Alerts you to inaccurate predictions</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam keyword:</strong> "monitor production", "drift", "model degrading over time", "alerts" → <strong>Model Monitor</strong>.
+            </div>
+            <p class="aside">Clarify catches bias upfront and explains predictions. Model Monitor catches problems after deployment. <strong>Both = Responsible AI.</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 08: Data Wrangler -->
+      <div class="card" data-section="sagemaker">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">08sagemaker</div>
+            <div class="tags"><span class="tag sage">data prep</span><span class="tag lilac">no-code</span></div>
+            <h3>Data Wrangler</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="15" y="30" width="40" height="40" fill="#ecc8c0" opacity="0.7"/>
+                <text x="35" y="55" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">messy</text>
+                <text x="80" y="55" font-family="Fraunces" font-style="italic" font-size="14" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="100" y="30" width="40" height="40" fill="#c8d4be"/>
+                <text x="120" y="55" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">clean</text>
+                <text x="165" y="55" font-family="Fraunces" font-style="italic" font-size="14" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="185" y="40" width="20" height="20" fill="#2a2520"/>
+                <text x="195" y="78" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#6b5f52">ML</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">08sagemaker</div>
+            <h4>SageMaker Data Wrangler</h4>
+            <p>The <strong>fastest, easiest way to prep tabular and image data</strong> for ML — with little to no code.</p>
+            <ul>
+              <li>Import data from many sources (S3, Athena, Redshift, Snowflake)</li>
+              <li>300+ built-in transforms (impute, encode, normalise)</li>
+              <li>Visualise distributions and outliers</li>
+              <li>Export as a pipeline or feature set</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam keyword:</strong> "prepare data", "data preparation", "clean data", "tabular and image data for ML" → <strong>Data Wrangler</strong>.
+            </div>
+            <p class="aside">Different from <strong>Ground Truth</strong>, which is for <em>labeling</em> data (annotating it), not transforming it.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 09: Ground Truth -->
+      <div class="card" data-section="sagemaker">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">09sagemaker</div>
+            <div class="tags"><span class="tag blush">labeling</span><span class="tag butter">humans + ML</span></div>
+            <h3>Ground Truth</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="40" y="25" width="35" height="35" fill="#ecc8c0" rx="2"/>
+                <rect x="50" y="62" width="15" height="10" fill="#2a2520"/>
+                <text x="57" y="70" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#f7f2ea">cat</text>
+                <rect x="100" y="25" width="35" height="35" fill="#c8d4be" rx="2"/>
+                <rect x="110" y="62" width="15" height="10" fill="#2a2520"/>
+                <text x="117" y="70" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#f7f2ea">dog</text>
+                <rect x="160" y="25" width="35" height="35" fill="#d4cce0" rx="2"/>
+                <rect x="170" y="62" width="15" height="10" fill="#2a2520"/>
+                <text x="177" y="70" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#f7f2ea">cat</text>
+                <text x="118" y="92" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#6b5f52">labels added by humans</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">09sagemaker</div>
+            <h4>SageMaker Ground Truth</h4>
+            <p>For <strong>labeling and annotating training data</strong> — turns raw data into labeled data for supervised learning.</p>
+            <ul>
+              <li>Use Mechanical Turk workers, vendors, or your own team</li>
+              <li>Active learning: ML auto-labels easy items, humans handle hard ones</li>
+              <li>Reduces labeling cost vs. doing everything by hand</li>
+              <li>Also: <strong>Ground Truth Plus</strong> = fully managed labeling service</li>
+            </ul>
+            <p class="aside"><strong>Exam keyword:</strong> "data labeling", "annotate data", "human reviewers add labels" → <strong>Ground Truth</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ───────── § 03 responsible AI ───────── -->
+    <div class="section-marker" data-section="responsible">
+      <span class="num">§ 03</span>
+      <h2>responsible AI</h2>
+      <span class="count">2 cards</span>
+    </div>
+    <div class="grid">
+
+      <!-- card 10: pillars -->
+      <div class="card" data-section="responsible">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">10responsible</div>
+            <div class="tags"><span class="tag ink">core concept</span></div>
+            <h3>Responsible AI pillars</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="30" width="22" height="55" fill="#c8d4be"/>
+                <rect x="50" y="30" width="22" height="55" fill="#ecc8c0"/>
+                <rect x="80" y="30" width="22" height="55" fill="#f0d99c"/>
+                <rect x="110" y="30" width="22" height="55" fill="#d4cce0"/>
+                <rect x="140" y="30" width="22" height="55" fill="#bfd3dc"/>
+                <rect x="170" y="30" width="22" height="55" fill="#c8d4be"/>
+                <line x1="15" y1="22" x2="200" y2="22" stroke="#2a2520" stroke-width="1.5"/>
+                <text x="107" y="15" font-family="Fraunces" font-style="italic" font-size="9" text-anchor="middle" fill="#2a2520">responsible AI</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">10responsible</div>
+            <h4>The 6 pillars (AWS Responsible AI)</h4>
+            <table>
+              <tr><th>pillar</th><th>what it means</th></tr>
+              <tr><td>Fairness</td><td>equitable outcomes across groups</td></tr>
+              <tr><td>Explainability</td><td>understand how predictions are made</td></tr>
+              <tr><td>Privacy &amp; security</td><td>protect data &amp; respect rights</td></tr>
+              <tr><td>Safety</td><td>algorithms work as intended, no harm</td></tr>
+              <tr><td>Controllability</td><td>humans can oversee &amp; correct AI</td></tr>
+              <tr><td>Veracity &amp; robustness</td><td>accurate &amp; reliable outputs</td></tr>
+              <tr><td>Governance</td><td>compliance, accountability</td></tr>
+              <tr><td>Transparency</td><td>openness about capabilities &amp; limits</td></tr>
+            </table>
+            <p class="aside">AWS tools that map here: <strong>Clarify</strong> (fairness + explainability), <strong>Model Monitor</strong> (safety + robustness), <strong>A2I</strong> (controllability).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 11: A2I -->
+      <div class="card" data-section="responsible">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">11responsible</div>
+            <div class="tags"><span class="tag sage">human review</span><span class="tag butter">A2I</span></div>
+            <h3>Amazon A2I</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="15" y="35" width="35" height="30" fill="#c8d4be" rx="2"/>
+                <text x="32" y="54" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">ML</text>
+                <text x="62" y="53" font-family="Fraunces" font-style="italic" font-size="12" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="78" y="35" width="40" height="30" fill="#f0d99c" stroke="#c97a6e" stroke-width="1" rx="2"/>
+                <text x="98" y="50" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">low</text>
+                <text x="98" y="58" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">confidence</text>
+                <text x="130" y="53" font-family="Fraunces" font-style="italic" font-size="12" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="148" y="35" width="50" height="30" fill="#ecc8c0" rx="2"/>
+                <text x="173" y="54" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">human ♡</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">11responsible</div>
+            <h4>Amazon Augmented AI (A2I)</h4>
+            <p>Implements <strong>human review for ML predictions</strong> — useful when accuracy matters and the model is uncertain.</p>
+            <ul>
+              <li>Built-in workflows for Rekognition, Textract, custom models</li>
+              <li>Trigger human review when prediction confidence is low</li>
+              <li>Or sample a % of predictions for QA review</li>
+              <li>Reviewers can be your team, vendors, or Mechanical Turk</li>
+            </ul>
+            <p class="aside">This is the AWS service for the <strong>"human-in-the-loop"</strong> pillar of Responsible AI. Critical for high-stakes use cases like medical, legal, content moderation.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ───────── § 04 lifecycle terms ───────── -->
+    <div class="section-marker" data-section="lifecycle">
+      <span class="num">§ 04</span>
+      <h2>lifecycle terms</h2>
+      <span class="count">4 cards</span>
+    </div>
+    <div class="grid">
+
+      <!-- card 12: ML sequence -->
+      <div class="card" data-section="lifecycle">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">12lifecycle</div>
+            <div class="tags"><span class="tag lilac">sequence</span><span class="tag sage">4 steps</span></div>
+            <h3>The ML process</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="40" width="40" height="22" fill="#c8d4be" rx="2"/>
+                <text x="30" y="54" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">collect</text>
+                <text x="55" y="54" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="65" y="40" width="40" height="22" fill="#ecc8c0" rx="2"/>
+                <text x="85" y="54" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">prep</text>
+                <text x="110" y="54" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="120" y="40" width="40" height="22" fill="#f0d99c" rx="2"/>
+                <text x="140" y="54" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">train</text>
+                <text x="165" y="54" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="175" y="40" width="40" height="22" fill="#d4cce0" rx="2"/>
+                <text x="195" y="54" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">eval</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">12lifecycle</div>
+            <h4>The ML process sequence</h4>
+            <p>The fundamental 4-step sequence the exam will test:</p>
+            <ol style="padding-left: 1.2rem; font-size: 0.88rem; margin: 0.5rem 0;">
+              <li><strong>Data collection</strong> — gather from all sources</li>
+              <li><strong>Data preprocessing</strong> — clean, normalise, split train/val/test</li>
+              <li><strong>Model training</strong> — feed prepared data to the algorithm</li>
+              <li><strong>Model evaluation</strong> — assess on the held-out test set</li>
+            </ol>
+            <div class="trap">
+              <strong>Logic check:</strong> you can't preprocess what you don't have, can't train on raw mess, can't evaluate nothing. The sequence is forced by what each step needs.
+            </div>
+            <p class="aside">In the wider <strong>ML lifecycle</strong> (MLOps), this extends to: framing → data → train → deploy → monitor → iterate.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 13: training -->
+      <div class="card" data-section="lifecycle">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">13lifecycle</div>
+            <div class="tags"><span class="tag butter">training</span><span class="tag sage">learning phase</span></div>
+            <h3>Training</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="30" width="180" height="40" fill="none" stroke="#2a2520" stroke-width="1" rx="3"/>
+                <circle cx="50" cy="50" r="8" fill="#c8d4be"/>
+                <circle cx="80" cy="50" r="8" fill="#c8d4be"/>
+                <circle cx="110" cy="50" r="8" fill="#c8d4be"/>
+                <circle cx="140" cy="50" r="8" fill="#c8d4be"/>
+                <circle cx="170" cy="50" r="8" fill="#c8d4be"/>
+                <text x="110" y="22" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">parameters updating ↻</text>
+                <text x="110" y="85" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">labeled training data</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">13lifecycle</div>
+            <h4>Training</h4>
+            <p>The phase where the model <strong>learns</strong> — its internal parameters (weights) are being updated.</p>
+            <ul>
+              <li>Uses the <strong>training set</strong> (~60–80% of data)</li>
+              <li>Algorithm minimises an error function</li>
+              <li>Model "sees" examples and adjusts</li>
+              <li>The output is a <strong>trained model</strong></li>
+            </ul>
+            <div class="trap">
+              <strong>Tell from inference:</strong> in training, parameters CHANGE. In inference, parameters are FROZEN. If the question says "adjusting parameters" → training.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 14: validation vs testing -->
+      <div class="card" data-section="lifecycle">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">14lifecycle</div>
+            <div class="tags"><span class="tag lilac">val</span><span class="tag sky">test</span></div>
+            <h3>Validation vs Testing</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="30" width="80" height="40" fill="#d4cce0" rx="2"/>
+                <text x="60" y="48" font-family="JetBrains Mono" font-size="8" text-anchor="middle" fill="#2a2520">validation</text>
+                <text x="60" y="60" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#6b5f52">tune knobs</text>
+                <rect x="120" y="30" width="80" height="40" fill="#bfd3dc" rx="2"/>
+                <text x="160" y="48" font-family="JetBrains Mono" font-size="8" text-anchor="middle" fill="#2a2520">testing</text>
+                <text x="160" y="60" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#6b5f52">final check</text>
+                <text x="60" y="85" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#a89c8e">during training</text>
+                <text x="160" y="85" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#a89c8e">after training</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">14lifecycle</div>
+            <h4>Validation vs Testing</h4>
+            <table>
+              <tr><th></th><th>validation</th><th>testing</th></tr>
+              <tr><td><strong>when</strong></td><td>during training</td><td>after training</td></tr>
+              <tr><td><strong>data</strong></td><td>val set (10–20%)</td><td>test set (10–20%)</td></tr>
+              <tr><td><strong>purpose</strong></td><td>tune hyperparameters, prevent overfit</td><td>unbiased final estimate of performance</td></tr>
+              <tr><td><strong>repeat?</strong></td><td>many times</td><td>ideally once</td></tr>
+            </table>
+            <p class="aside"><strong>Mnemonic:</strong> validation = the dress rehearsal (you adjust). Testing = the actual show (you don't tweak after).</p>
+            <p class="aside" style="border:none;padding:0;margin-top:0.3rem;">Neither involves serving predictions to real users — that's <strong>inference</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 15: inference -->
+      <div class="card" data-section="lifecycle">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">15lifecycle</div>
+            <div class="tags"><span class="tag ink">inference</span><span class="tag blush">production</span></div>
+            <h3>Inference</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="42" width="35" height="20" fill="#ecc8c0" rx="2"/>
+                <text x="27" y="55" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">new data</text>
+                <text x="55" y="55" font-family="Fraunces" font-style="italic" font-size="12" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="70" y="30" width="80" height="45" fill="#2a2520" rx="2"/>
+                <text x="110" y="48" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#f7f2ea">trained</text>
+                <text x="110" y="62" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#f7f2ea">model</text>
+                <text x="170" y="55" font-family="Fraunces" font-style="italic" font-size="12" text-anchor="middle" fill="#6b5f52">→</text>
+                <rect x="183" y="42" width="32" height="20" fill="#c8d4be" rx="2"/>
+                <text x="199" y="55" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">predict</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">15lifecycle</div>
+            <h4>Inference</h4>
+            <p>The <strong>deployed</strong> model uses its frozen learned parameters to make a prediction on <strong>new, real-world input</strong>.</p>
+            <ul>
+              <li>This is what users actually experience</li>
+              <li>No learning happening — parameters don't change</li>
+              <li>Two modes: <strong>real-time</strong> (live API, low latency) and <strong>batch</strong> (process many records at once)</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam trap:</strong> the question describes "user inputs new data → model returns prediction" — this is ALWAYS inference, even though it sounds like it could be validation or testing. Validation &amp; testing happen on data you ALREADY HAVE during the model dev process.
+            </div>
+            <p class="aside">In SageMaker, you deploy a model to an <strong>endpoint</strong> for real-time inference, or run a <strong>batch transform job</strong> for bulk.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ───────── § 05 foundation models ───────── -->
+    <div class="section-marker" data-section="fm">
+      <span class="num">§ 05</span>
+      <h2>foundation models</h2>
+      <span class="count">3 cards</span>
+    </div>
+    <div class="grid">
+
+      <!-- card 16: self-supervised -->
+      <div class="card" data-section="fm">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">16fm</div>
+            <div class="tags"><span class="tag ink">FM technique</span><span class="tag butter">!! exam trap</span></div>
+            <h3>FMs &amp; self-supervised</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <text x="20" y="35" font-family="Fraunces" font-size="11" fill="#2a2520">the cat sat on</text>
+                <rect x="135" y="22" width="32" height="18" fill="#ecc8c0" stroke="#c97a6e" stroke-width="1"/>
+                <text x="151" y="35" font-family="JetBrains Mono" font-size="9" text-anchor="middle" fill="#2a2520">[ ? ]</text>
+                <text x="20" y="58" font-family="JetBrains Mono" font-size="7" fill="#6b5f52">predict → "mat"</text>
+                <text x="20" y="82" font-family="Fraunces" font-style="italic" font-size="9" fill="#6b5f52">the data labels itself ♡</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">16fm</div>
+            <h4>Foundation Models use self-supervised learning</h4>
+            <p><strong>The defining technique for FMs.</strong> Model gets vast amounts of unlabeled data, then generates labels from the data itself.</p>
+            <ul>
+              <li>No humans labeling anything upfront</li>
+              <li>Example: LLM predicts the next word — the "label" is just the next word that already exists in the text</li>
+              <li>Used to pre-train, then fine-tune for downstream tasks</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam trap:</strong> "Unsupervised" is the wrong-but-tempting answer. Don't fall for it.<br>
+              ⨯ Unsupervised = unlabeled data, no labels at all, find patterns<br>
+              ✓ Self-supervised = unlabeled data, model CREATES labels from it
+            </div>
+            <p class="aside">Question keywords: "<strong>foundation model</strong>" + "<strong>generates labels</strong>" + "<strong>from raw input</strong>" → always self-supervised.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 17: 4 learning paradigms quick ref -->
+      <div class="card" data-section="fm">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">17fm</div>
+            <div class="tags"><span class="tag sage">4 paradigms</span><span class="tag sky">quick ref</span></div>
+            <h3>Learning paradigms</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="20" width="48" height="25" fill="#c8d4be" rx="2"/>
+                <text x="34" y="36" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">supervised</text>
+                <rect x="62" y="20" width="48" height="25" fill="#ecc8c0" rx="2"/>
+                <text x="86" y="36" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">unsuperv.</text>
+                <rect x="114" y="20" width="48" height="25" fill="#f0d99c" rx="2"/>
+                <text x="138" y="36" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">self-sup.</text>
+                <rect x="166" y="20" width="48" height="25" fill="#d4cce0" rx="2"/>
+                <text x="190" y="36" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#2a2520">reinforce.</text>
+                <text x="110" y="65" font-family="Fraunces" font-style="italic" font-size="9" text-anchor="middle" fill="#6b5f52">all sit under "machine learning"</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">17fm</div>
+            <h4>The 4 learning paradigms</h4>
+            <table>
+              <tr><th>type</th><th>data</th><th>used for</th></tr>
+              <tr><td>Supervised</td><td>labeled in/out pairs</td><td>classification, regression</td></tr>
+              <tr><td>Unsupervised</td><td>unlabeled, no labels created</td><td>clustering, anomaly</td></tr>
+              <tr><td>Self-supervised</td><td>unlabeled, model creates labels</td><td>foundation models, LLMs</td></tr>
+              <tr><td>Reinforcement</td><td>reward signal</td><td>games, robotics, RLHF</td></tr>
+            </table>
+            <p class="aside">Plus <strong>semi-supervised</strong> = small labeled + large unlabeled, uses pseudo-labeling.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 18: bedrock + jumpstart for FMs -->
+      <div class="card" data-section="fm">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">18fm</div>
+            <div class="tags"><span class="tag blush">Bedrock</span><span class="tag lilac">FM access</span></div>
+            <h3>Bedrock</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="25" width="180" height="50" fill="#2a2520" rx="4"/>
+                <text x="110" y="40" font-family="Fraunces" font-style="italic" font-size="11" text-anchor="middle" fill="#f7f2ea">Amazon Bedrock</text>
+                <rect x="35" y="50" width="30" height="15" fill="#ecc8c0" rx="1"/>
+                <text x="50" y="60" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">Claude</text>
+                <rect x="70" y="50" width="30" height="15" fill="#c8d4be" rx="1"/>
+                <text x="85" y="60" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">Titan</text>
+                <rect x="105" y="50" width="30" height="15" fill="#d4cce0" rx="1"/>
+                <text x="120" y="60" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">Llama</text>
+                <rect x="140" y="50" width="30" height="15" fill="#bfd3dc" rx="1"/>
+                <text x="155" y="60" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">Mistral</text>
+                <text x="187" y="60" font-family="JetBrains Mono" font-size="9" fill="#f7f2ea">+</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">18fm</div>
+            <h4>Amazon Bedrock</h4>
+            <p>The <strong>fully managed service for accessing foundation models via API</strong> from multiple providers.</p>
+            <ul>
+              <li>Access to Anthropic Claude, Meta Llama, Mistral, Cohere, Amazon Titan, etc.</li>
+              <li>Serverless — no infrastructure to manage</li>
+              <li>Fine-tune FMs on your own data privately</li>
+              <li>Knowledge Bases for RAG, Agents for tool-use</li>
+              <li>Guardrails for safety filtering</li>
+            </ul>
+            <div class="trap">
+              <strong>Bedrock vs SageMaker JumpStart:</strong><br>
+              Bedrock = serverless API for FMs, fully managed<br>
+              JumpStart = deploy FMs to YOUR SageMaker infrastructure, more control
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ───────── § 06 fit & challenges ───────── -->
+    <div class="section-marker" data-section="fit">
+      <span class="num">§ 06</span>
+      <h2>fit &amp; challenges</h2>
+      <span class="count">2 cards</span>
+    </div>
+    <div class="grid">
+
+      <!-- card 19: bias variance -->
+      <div class="card" data-section="fit">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">19fit</div>
+            <div class="tags"><span class="tag butter">bias</span><span class="tag sky">variance</span></div>
+            <h3>Bias × Variance</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="55" cy="50" r="28" fill="none" stroke="#2a2520" stroke-width="0.8"/>
+                <circle cx="55" cy="50" r="18" fill="none" stroke="#2a2520" stroke-width="0.8"/>
+                <circle cx="55" cy="50" r="8" fill="#ecc8c0"/>
+                <circle cx="40" cy="35" r="2" fill="#2a2520"/>
+                <circle cx="42" cy="33" r="2" fill="#2a2520"/>
+                <circle cx="38" cy="38" r="2" fill="#2a2520"/>
+                <text x="55" y="95" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">high bias</text>
+                <circle cx="165" cy="50" r="28" fill="none" stroke="#2a2520" stroke-width="0.8"/>
+                <circle cx="165" cy="50" r="18" fill="none" stroke="#2a2520" stroke-width="0.8"/>
+                <circle cx="165" cy="50" r="8" fill="#ecc8c0"/>
+                <circle cx="150" cy="30" r="2" fill="#2a2520"/>
+                <circle cx="180" cy="65" r="2" fill="#2a2520"/>
+                <circle cx="160" cy="75" r="2" fill="#2a2520"/>
+                <circle cx="185" cy="40" r="2" fill="#2a2520"/>
+                <text x="165" y="95" font-family="JetBrains Mono" font-size="7" text-anchor="middle" fill="#6b5f52">high variance</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">19fit</div>
+            <h4>Bias &amp; Variance, locked in</h4>
+            <table>
+              <tr><th></th><th>underfit</th><th>overfit</th></tr>
+              <tr><td><strong>bias</strong></td><td>HIGH</td><td>low</td></tr>
+              <tr><td><strong>variance</strong></td><td>low</td><td>HIGH</td></tr>
+              <tr><td><strong>train perf</strong></td><td>poor</td><td>great</td></tr>
+              <tr><td><strong>test perf</strong></td><td>poor</td><td>poor</td></tr>
+            </table>
+            <p>Memorable framing:</p>
+            <ul>
+              <li><strong>Underfit</strong> = high bias, model is too simple, biased toward being basic</li>
+              <li><strong>Overfit</strong> = high variance, model memorised noise, output swings wildly with new data</li>
+            </ul>
+            <p class="aside">Goldilocks zone in the middle. Reduce overfit with: more data, regularisation, early stopping, dropout, ensembling.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- card 20: ml challenges -->
+      <div class="card" data-section="fit">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-id">20fit</div>
+            <div class="tags"><span class="tag sage">challenges</span><span class="tag blush">data first</span></div>
+            <h3>ML's #1 challenge</h3>
+            <div class="preview">
+              <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="55" width="180" height="25" fill="#c8d4be" rx="2"/>
+                <text x="110" y="72" font-family="Fraunces" font-style="italic" font-size="10" text-anchor="middle" fill="#2a2520">data: collection &amp; quality</text>
+                <rect x="60" y="35" width="100" height="15" fill="#ecc8c0" rx="2"/>
+                <text x="110" y="46" font-family="JetBrains Mono" font-size="6" text-anchor="middle" fill="#2a2520">algorithms</text>
+                <rect x="90" y="20" width="40" height="10" fill="#d4cce0" rx="2"/>
+                <text x="110" y="28" font-family="JetBrains Mono" font-size="5" text-anchor="middle" fill="#2a2520">compute</text>
+              </svg>
+            </div>
+            <div class="flip-hint">tap to flip ✦</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-id">20fit</div>
+            <h4>The biggest ML challenge: data</h4>
+            <p><strong>Collecting and preparing high-quality data</strong> is THE primary challenge in real-world ML implementation.</p>
+            <ul>
+              <li>Algorithms are commodity (open-source, well-documented)</li>
+              <li>Compute is rentable (AWS, GPUs on demand)</li>
+              <li>Data quality, quantity, labeling, bias — all bottlenecks</li>
+              <li>"Garbage in, garbage out" — your model is only as good as its data</li>
+            </ul>
+            <div class="trap">
+              <strong>Exam rule of thumb:</strong> if "biggest challenge" or "primary difficulty" appears in a question, the answer is almost always about <strong>data</strong>, not algorithms or compute.
+            </div>
+            <p class="aside">Adjacent challenges: model interpretability, deployment costs, monitoring drift, ethical concerns, regulatory compliance.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>made with <span class="heart">♡</span> · companion to the <em>AI/ML concepts</em> deck · for AWS Certified AI Practitioner revision</p>
+    <p style="margin-top:0.5rem;">tap any card to flip · click "shuffle" for spaced practice</p>
+  </footer>
+</div>
+
+<script>
+  const deck = document.getElementById('deck');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const sectionMarkers = Array.from(document.querySelectorAll('.section-marker'));
+  const filterPills = document.querySelectorAll('.pill');
+  const flippedCountEl = document.getElementById('flipped-count');
+  const totalEl = document.getElementById('total');
+  const flippedTotalEl = document.getElementById('flipped-total');
+
+  totalEl.textContent = cards.length;
+  flippedTotalEl.textContent = cards.length;
+
+  function updateFlippedCount() {
+    const visibleFlipped = cards.filter(c => !c.classList.contains('hidden') && c.classList.contains('flipped')).length;
+    flippedCountEl.textContent = visibleFlipped;
+  }
+
+  function updateVisibleTotal() {
+    const visible = cards.filter(c => !c.classList.contains('hidden')).length;
+    flippedTotalEl.textContent = visible;
+  }
+
+  // flip card on click
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+      updateFlippedCount();
+    });
+  });
+
+  // filters
+  filterPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      filterPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const filter = pill.dataset.filter;
+
+      cards.forEach(card => {
+        if (filter === 'all' || card.dataset.section === filter) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      sectionMarkers.forEach(marker => {
+        if (filter === 'all' || marker.dataset.section === filter) {
+          marker.classList.remove('hidden');
+        } else {
+          marker.classList.add('hidden');
+        }
+      });
+
+      // hide empty grids
+      document.querySelectorAll('.grid').forEach(grid => {
+        const visibleCards = grid.querySelectorAll('.card:not(.hidden)').length;
+        grid.style.display = visibleCards === 0 ? 'none' : 'grid';
+      });
+
+      updateVisibleTotal();
+      updateFlippedCount();
+    });
+  });
+
+  // flip all (visible only)
+  document.getElementById('flip-all').addEventListener('click', () => {
+    const visible = cards.filter(c => !c.classList.contains('hidden'));
+    const allFlipped = visible.every(c => c.classList.contains('flipped'));
+    visible.forEach(c => {
+      if (allFlipped) c.classList.remove('flipped');
+      else c.classList.add('flipped');
+    });
+    updateFlippedCount();
+  });
+
+  // reset
+  document.getElementById('reset').addEventListener('click', () => {
+    cards.forEach(c => c.classList.remove('flipped'));
+    updateFlippedCount();
+  });
+
+  // shuffle: reorder visible cards within their grids
+  document.getElementById('shuffle').addEventListener('click', () => {
+    document.querySelectorAll('.grid').forEach(grid => {
+      const gridCards = Array.from(grid.children).filter(el => el.classList.contains('card'));
+      // Fisher-Yates shuffle
+      for (let i = gridCards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [gridCards[i], gridCards[j]] = [gridCards[j], gridCards[i]];
+      }
+      gridCards.forEach(c => grid.appendChild(c));
+    });
+  });
+</script>
+</body>
+</html>
